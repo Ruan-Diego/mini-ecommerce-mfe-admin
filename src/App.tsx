@@ -1,5 +1,5 @@
 import { Route, Routes } from 'react-router-dom';
-import type { PropsRemoto } from './contracts';
+import type { PropsRemoto } from '@ruan-diego/mini-event-contracts';
 import { Painel } from './pages/Painel';
 import { Produtos } from './pages/Produtos';
 import { Estoque } from './pages/Estoque';
