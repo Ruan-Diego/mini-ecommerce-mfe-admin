@@ -7,7 +7,7 @@
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import { MatchersV3 } from '@pact-foundation/pact';
-import { atualizarProduto, cadastrarProduto, desativarProduto, enviarImagem, listarCategorias, listarProdutos, type DadosDoProduto } from '../catalogo';
+import { atualizarProduto, cadastrarProduto, desativarProduto, enviarImagem, listarCategorias, listarProdutos, listarTodosOsProdutos, type DadosDoProduto } from '../catalogo';
 import type { ErroDeApi } from '../http';
 import { CABECALHOS_ADMIN, CABECALHOS_ADMIN_JSON, CABECALHOS_CLIENTE, JSON_UTF8, novoProvider, obterTokenAdmin, obterTokenCliente } from './comum';
 
@@ -82,6 +82,24 @@ describe('contrato mfe-admin → catalogo-service', () => {
       expect(pagina.total).toBe(2);
       expect(pagina.itens.map((p) => p.ativo)).toEqual([true, false]);
       expect(pagina.itens[0]).toMatchObject({ id: PRODUTO, sku: 'ESF-CHROME-01' });
+    });
+  });
+
+  it('lista todos os produtos em páginas de 100 (tela de Estoque)', async () => {
+    provider
+      .given(ESTADO_PRODUTOS_ATIVO_E_DESATIVADO)
+      .uponReceiving('a lista de produtos do admin em páginas de 100')
+      .withRequest({ method: 'GET', path: '/catalogo/admin/produtos', query: { pagina: '0', tamanho: '100' }, headers: CABECALHOS_ADMIN })
+      .willRespondWith({
+        status: 200,
+        headers: { 'Content-Type': JSON_UTF8 },
+        body: { itens: [{ ...produto, ativo: true }, produtoDesativado], pagina: integer(0), tamanho: integer(100), total: integer(2), totalPaginas: integer(1) },
+      });
+
+    await provider.executeTest(async (mock) => {
+      vi.stubEnv('VITE_API_URL', mock.url);
+      const todos = await listarTodosOsProdutos(obterTokenAdmin);
+      expect(todos.map((p) => p.sku)).toEqual(['ESF-CHROME-01', 'ESF-LIME-01']);
     });
   });
 

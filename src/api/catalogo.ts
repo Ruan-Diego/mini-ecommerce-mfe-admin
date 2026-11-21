@@ -78,3 +78,17 @@ export interface Categoria {
 /** Categorias em ordem alfabética (leitura pública da vitrine, para o seletor do formulário). */
 export const listarCategorias = (obterToken: ObterToken, sinal?: AbortSignal) =>
   chamar<Categoria[]>('GET', '/catalogo/categorias', obterToken, { sinal });
+
+/** Quantas páginas de 100 a tela de Estoque carrega no máximo (1000 produtos): trava contra laço sem fim. */
+const MAXIMO_DE_PAGINAS = 10;
+
+/** Todos os produtos (inclusive desativados), em páginas de 100 pelo `GET /admin/produtos`. */
+export async function listarTodosOsProdutos(obterToken: ObterToken, sinal?: AbortSignal): Promise<Produto[]> {
+  const produtos: Produto[] = [];
+  for (let pagina = 0; pagina < MAXIMO_DE_PAGINAS; pagina++) {
+    const resposta = await listarProdutos(obterToken, undefined, pagina, 100, sinal);
+    produtos.push(...resposta.itens);
+    if (pagina + 1 >= resposta.totalPaginas) break;
+  }
+  return produtos;
+}

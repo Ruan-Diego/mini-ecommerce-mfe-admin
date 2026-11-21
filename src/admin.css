@@ -56,3 +56,12 @@
 .lista-imagens img { object-fit: cover; border-radius: 8px; }
 .lista-imagens .btn { min-height: 44px; }
 .envio-imagem { display: flex; flex-direction: column; gap: 12px; align-items: flex-start; }
+
+.filtros-estoque { display: flex; gap: 16px; align-items: flex-end; flex-wrap: wrap; }
+.busca-estoque { flex: 1 1 260px; }
+.chips-estoque { display: flex; gap: 8px; flex-wrap: wrap; }
+.chips-estoque .chip { min-height: 44px; }
+.form-ajuste { display: flex; flex-direction: column; gap: 16px; }
+.form-ajuste p { margin: 0; }
+.form-ajuste .btn { min-height: 44px; }
+.tabela .btn { min-height: 44px; }

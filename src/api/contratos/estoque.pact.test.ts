@@ -6,11 +6,12 @@
  * tira o prefixo /estoque.
  */
 import { MatchersV3 } from '@pact-foundation/pact';
-import { definirDisponivel, indicadoresDeEstoque, listarEstoque } from '../estoque';
+import { ajustarEstoque, definirDisponivel, indicadoresDeEstoque, listarEstoque } from '../estoque';
 import type { ErroDeApi } from '../http';
 import { CABECALHOS_ADMIN, CABECALHOS_ADMIN_JSON, CABECALHOS_CLIENTE, JSON_UTF8, novoProvider, obterTokenAdmin, obterTokenCliente } from './comum';
 
-const { eachLike, integer, boolean, uuid } = MatchersV3;
+const { eachLike, integer, boolean, uuid, like, string, regex } = MatchersV3;
+const PROBLEMA = regex(/application\/(problem\+)?json.*/.source, 'application/problem+json');
 
 const provider = novoProvider('estoque-service');
 
@@ -88,6 +89,49 @@ describe('contrato mfe-admin → estoque-service', () => {
       vi.stubEnv('VITE_API_URL', mock.url);
       const atualizado = await definirDisponivel(obterTokenAdmin, PRODUTO, 20);
       expect(atualizado).toMatchObject({ disponivel: 20, estoqueBaixo: false });
+    });
+  });
+
+  it('registra uma entrada (soma ao saldo de agora) e recebe o item atualizado', async () => {
+    provider
+      .given(ESTADO)
+      .uponReceiving('o ajuste de entrada de 5 unidades')
+      .withRequest({
+        method: 'POST',
+        path: `/estoque/admin/estoque/${PRODUTO}/ajustes`,
+        headers: CABECALHOS_ADMIN_JSON,
+        body: { tipo: 'ENTRADA', quantidade: 5 },
+      })
+      .willRespondWith({
+        status: 200,
+        headers: { 'Content-Type': JSON_UTF8 },
+        body: { produtoId: uuid(PRODUTO), disponivel: 8, reservado: integer(0), emEstoque: true, estoqueBaixo: false },
+      });
+
+    await provider.executeTest(async (mock) => {
+      vi.stubEnv('VITE_API_URL', mock.url);
+      const atualizado = await ajustarEstoque(obterTokenAdmin, PRODUTO, 'ENTRADA', 5);
+      expect(atualizado).toMatchObject({ disponivel: 8, estoqueBaixo: false });
+    });
+  });
+
+  it('perda maior que o disponível é recusada (422) com o motivo', async () => {
+    provider
+      .given(ESTADO)
+      .uponReceiving('o ajuste de perda maior que o disponível')
+      .withRequest({
+        method: 'POST',
+        path: `/estoque/admin/estoque/${PRODUTO}/ajustes`,
+        headers: CABECALHOS_ADMIN_JSON,
+        body: { tipo: 'PERDA', quantidade: 10 },
+      })
+      .willRespondWith({ status: 422, headers: { 'Content-Type': PROBLEMA }, body: like({ detail: string('a perda de 10 é maior que o disponível (3)') }) });
+
+    await provider.executeTest(async (mock) => {
+      vi.stubEnv('VITE_API_URL', mock.url);
+      const erro = await ajustarEstoque(obterTokenAdmin, PRODUTO, 'PERDA', 10).catch((e: ErroDeApi) => e);
+      expect(erro).toMatchObject({ status: 422 });
+      expect((erro as ErroDeApi).message).toMatch(/disponível/);
     });
   });
 
