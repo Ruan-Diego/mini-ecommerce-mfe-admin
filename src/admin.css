@@ -1,0 +1,29 @@
+/* Telas do admin. Tokens e componentes (.card, .side, .pill, .btn...) vêm do design system. */
+.admin { padding-top: 48px; padding-bottom: 96px; display: flex; flex-wrap: wrap; gap: 40px; align-items: flex-start; }
+.admin-nav { flex: 1 1 220px; max-width: 260px; display: flex; flex-direction: column; gap: 6px; }
+.admin-nav a { min-height: 44px; display: flex; align-items: center; }
+.admin-conteudo { flex: 999 1 560px; min-width: 0; display: flex; flex-direction: column; gap: 32px; }
+.admin-titulo { margin: 0; }
+
+.estado { padding: 32px; display: flex; flex-direction: column; gap: 12px; align-items: flex-start; }
+.estado p { margin: 0; }
+.estado .btn { min-height: 44px; }
+.esqueleto { opacity: .5; }
+.painel-esqueleto { display: flex; flex-direction: column; gap: 24px; }
+
+.grade-indicadores { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(220px, 100%), 1fr)); gap: 16px; }
+.indicador { padding: 24px; display: flex; flex-direction: column; gap: 6px; min-height: 140px; }
+.indicador-valor { font: 600 clamp(28px, 4vw, 40px) var(--fd); line-height: 1.1; }
+.indicador-nota { font-size: 13px; }
+.indicador-aviso { border-color: var(--ac); }
+.indicador a { margin-top: auto; min-height: 44px; display: inline-flex; align-items: center; width: fit-content; }
+
+.ultimos { padding: 24px; display: flex; flex-direction: column; gap: 16px; }
+.ultimos-topo { display: flex; justify-content: space-between; align-items: center; gap: 16px; flex-wrap: wrap; }
+.ultimos-topo h2, .ultimos p { margin: 0; }
+.ultimos-topo a { min-height: 44px; display: inline-flex; align-items: center; }
+.tabela-rolavel { overflow-x: auto; }
+.tabela { width: 100%; border-collapse: collapse; }
+.tabela th, .tabela td { padding: 12px 8px; text-align: left; border-bottom: 1px solid var(--line); white-space: nowrap; }
+.tabela th[scope='row'] { font-weight: 500; }
+.tabela .num { text-align: right; }
