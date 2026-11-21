@@ -65,3 +65,21 @@
 .form-ajuste p { margin: 0; }
 .form-ajuste .btn { min-height: 44px; }
 .tabela .btn { min-height: 44px; }
+
+.filtros-pedidos { display: flex; gap: 16px; align-items: flex-end; flex-wrap: wrap; }
+.chips-pedidos { display: flex; gap: 8px; flex-wrap: wrap; flex: 1 1 320px; }
+.chips-pedidos .chip { min-height: 44px; }
+.periodo { display: flex; gap: 12px; flex-wrap: wrap; }
+.pedidos-layout { display: grid; grid-template-columns: minmax(0, 1fr); gap: 24px; align-items: start; }
+.pedidos-layout.com-painel { grid-template-columns: minmax(0, 1fr) minmax(300px, 380px); }
+@media (max-width: 960px) { .pedidos-layout.com-painel { grid-template-columns: minmax(0, 1fr); } }
+.pedidos-lista { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+.linha-aberta { background: rgba(200, 242, 90, .06); }
+.painel-pedido { padding: 24px; display: flex; flex-direction: column; gap: 12px; position: sticky; top: 16px; }
+.painel-pedido h2, .painel-pedido h3, .painel-pedido p, .painel-pedido address { margin: 0; }
+.painel-topo { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
+.painel-topo .btn, .acoes-painel .btn, .tabela .btn { min-height: 44px; }
+.itens-painel { margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 4px; }
+.painel-total { display: flex; justify-content: space-between; font-size: 18px; }
+.acoes-painel { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.form-rastreio { display: flex; flex-direction: column; gap: 12px; }
