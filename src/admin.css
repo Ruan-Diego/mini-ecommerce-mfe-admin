@@ -1,0 +1,85 @@
+/* Telas do admin. Tokens e componentes (.card, .side, .pill, .btn...) vêm do design system. */
+.admin { padding-top: 48px; padding-bottom: 96px; display: flex; flex-wrap: wrap; gap: 40px; align-items: flex-start; }
+.admin-nav { flex: 1 1 220px; max-width: 260px; display: flex; flex-direction: column; gap: 6px; }
+.admin-nav a { min-height: 44px; display: flex; align-items: center; }
+.admin-conteudo { flex: 999 1 560px; min-width: 0; display: flex; flex-direction: column; gap: 32px; }
+.admin-titulo { margin: 0; }
+
+.estado { padding: 32px; display: flex; flex-direction: column; gap: 12px; align-items: flex-start; }
+.estado p { margin: 0; }
+.estado .btn { min-height: 44px; }
+.esqueleto { opacity: .5; }
+.painel-esqueleto { display: flex; flex-direction: column; gap: 24px; }
+
+.grade-indicadores { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(220px, 100%), 1fr)); gap: 16px; }
+.indicador { padding: 24px; display: flex; flex-direction: column; gap: 6px; min-height: 140px; }
+.indicador-valor { font: 600 clamp(28px, 4vw, 40px) var(--fd); line-height: 1.1; }
+.indicador-nota { font-size: 13px; }
+.indicador-aviso { border-color: var(--ac); }
+.indicador a { margin-top: auto; min-height: 44px; display: inline-flex; align-items: center; width: fit-content; }
+
+.ultimos { padding: 24px; display: flex; flex-direction: column; gap: 16px; }
+.ultimos-topo { display: flex; justify-content: space-between; align-items: center; gap: 16px; flex-wrap: wrap; }
+.ultimos-topo h2, .ultimos p { margin: 0; }
+.ultimos-topo a { min-height: 44px; display: inline-flex; align-items: center; }
+.tabela-rolavel { overflow-x: auto; }
+.tabela { width: 100%; border-collapse: collapse; }
+.tabela th, .tabela td { padding: 12px 8px; text-align: left; border-bottom: 1px solid var(--line); white-space: nowrap; }
+.tabela th[scope='row'] { font-weight: 500; }
+.tabela .num { text-align: right; }
+
+.produtos-topo { display: flex; justify-content: space-between; align-items: center; gap: 16px; flex-wrap: wrap; }
+.produtos-topo .btn, .busca-produtos .btn, .form-acoes .btn, .envio-imagem .btn { min-height: 44px; }
+.busca-produtos { display: flex; gap: 12px; align-items: flex-end; flex-wrap: wrap; }
+.busca-produtos .field { flex: 1 1 260px; }
+.erro-form { color: var(--bad); margin: 0; }
+.link { background: none; border: 0; padding: 0; color: var(--ac); text-decoration: underline; cursor: pointer; min-height: 44px; font: inherit; }
+.linha-desativada { opacity: .6; }
+.acoes-linha { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.acoes-linha .btn { min-height: 44px; }
+.btn-perigo { color: var(--bad); }
+.paginacao { display: flex; align-items: center; justify-content: center; gap: 16px; }
+.paginacao .btn { min-height: 44px; }
+
+.form-produto { padding: 24px; display: flex; flex-direction: column; gap: 16px; }
+.form-produto h2, .form-produto p { margin: 0; }
+.form-grade { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 12px 16px; }
+.form-grade .f-2 { grid-column: span 2; }
+.form-grade .f-3 { grid-column: span 3; }
+.form-grade .f-4 { grid-column: span 4; }
+.form-grade .f-6 { grid-column: span 6; }
+@media (max-width: 640px) { .form-grade > * { grid-column: span 6 !important; } }
+.form-acoes { display: flex; gap: 10px; justify-content: flex-end; flex-wrap: wrap; }
+.imagens { border: 1px solid var(--line); border-radius: 12px; padding: 16px; display: flex; flex-direction: column; gap: 12px; }
+.lista-imagens { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.lista-imagens li { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.lista-imagens img { object-fit: cover; border-radius: 8px; }
+.lista-imagens .btn { min-height: 44px; }
+.envio-imagem { display: flex; flex-direction: column; gap: 12px; align-items: flex-start; }
+
+.filtros-estoque { display: flex; gap: 16px; align-items: flex-end; flex-wrap: wrap; }
+.busca-estoque { flex: 1 1 260px; }
+.chips-estoque { display: flex; gap: 8px; flex-wrap: wrap; }
+.chips-estoque .chip { min-height: 44px; }
+.form-ajuste { display: flex; flex-direction: column; gap: 16px; }
+.form-ajuste p { margin: 0; }
+.form-ajuste .btn { min-height: 44px; }
+.tabela .btn { min-height: 44px; }
+
+.filtros-pedidos { display: flex; gap: 16px; align-items: flex-end; flex-wrap: wrap; }
+.chips-pedidos { display: flex; gap: 8px; flex-wrap: wrap; flex: 1 1 320px; }
+.chips-pedidos .chip { min-height: 44px; }
+.periodo { display: flex; gap: 12px; flex-wrap: wrap; }
+.pedidos-layout { display: grid; grid-template-columns: minmax(0, 1fr); gap: 24px; align-items: start; }
+.pedidos-layout.com-painel { grid-template-columns: minmax(0, 1fr) minmax(300px, 380px); }
+@media (max-width: 960px) { .pedidos-layout.com-painel { grid-template-columns: minmax(0, 1fr); } }
+.pedidos-lista { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+.linha-aberta { background: rgba(200, 242, 90, .06); }
+.painel-pedido { padding: 24px; display: flex; flex-direction: column; gap: 12px; position: sticky; top: 16px; }
+.painel-pedido h2, .painel-pedido h3, .painel-pedido p, .painel-pedido address { margin: 0; }
+.painel-topo { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
+.painel-topo .btn, .acoes-painel .btn, .tabela .btn { min-height: 44px; }
+.itens-painel { margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 4px; }
+.painel-total { display: flex; justify-content: space-between; font-size: 18px; }
+.acoes-painel { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.form-rastreio { display: flex; flex-direction: column; gap: 12px; }
