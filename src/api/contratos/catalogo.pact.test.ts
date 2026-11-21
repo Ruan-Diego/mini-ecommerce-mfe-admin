@@ -7,7 +7,7 @@
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import { MatchersV3 } from '@pact-foundation/pact';
-import { atualizarProduto, buscarProdutos, cadastrarProduto, desativarProduto, enviarImagem, type DadosDoProduto } from '../catalogo';
+import { atualizarProduto, cadastrarProduto, desativarProduto, enviarImagem, listarCategorias, listarProdutos, type DadosDoProduto } from '../catalogo';
 import type { ErroDeApi } from '../http';
 import { CABECALHOS_ADMIN, CABECALHOS_ADMIN_JSON, CABECALHOS_CLIENTE, JSON_UTF8, novoProvider, obterTokenAdmin, obterTokenCliente } from './comum';
 
@@ -18,6 +18,8 @@ const provider = novoProvider('catalogo-service');
 const PRODUTO = '11111111-1111-4111-8111-111111111111';
 const CATEGORIA = '33333333-3333-4333-8333-333333333333';
 const ESTADO_PRODUTO = 'existe o produto ativo esfera-chrome com o id 11111111-1111-4111-8111-111111111111';
+const ESTADO_PRODUTOS_ATIVO_E_DESATIVADO =
+  'existem o produto ativo esfera-chrome (11111111-1111-4111-8111-111111111111) e o desativado esfera-lime';
 const ESTADO_CATEGORIA = 'existe a categoria esferas com o id 33333333-3333-4333-8333-333333333333';
 const PROBLEMA = regex(/application\/(problem\+)?json.*/.source, 'application/problem+json');
 
@@ -31,6 +33,16 @@ const produto = {
   imagens: eachLike({ url: string('https://cdn.mini.dev/esfera.webp'), textoAlternativo: string('Esfera cromada') }),
   categoriaId: uuid(CATEGORIA),
   ativo: boolean(true),
+};
+
+/** O segundo produto da lista do admin: desativado, o que a vitrine não mostra. */
+const produtoDesativado = {
+  ...produto,
+  id: uuid('66666666-6666-4666-8666-666666666666'),
+  sku: string('ESF-LIME-01'),
+  nome: string('Esfera Lime'),
+  slug: string('esfera-lime'),
+  ativo: false,
 };
 
 const novo: DadosDoProduto = {
@@ -47,21 +59,47 @@ afterEach(() => {
 });
 
 describe('contrato mfe-admin → catalogo-service', () => {
-  it('busca produtos pelo texto (lista do admin)', async () => {
+  it('lista os produtos do admin, inclusive desativados, buscando por nome ou SKU', async () => {
     provider
-      .given(ESTADO_PRODUTO)
-      .uponReceiving('a busca de produtos pelo texto esfera')
-      .withRequest({ method: 'GET', path: '/catalogo/produtos', query: { busca: 'esfera', pagina: '0', tamanho: '20' }, headers: CABECALHOS_ADMIN })
+      .given(ESTADO_PRODUTOS_ATIVO_E_DESATIVADO)
+      .uponReceiving('a lista de produtos do admin buscando por esf')
+      .withRequest({
+        method: 'GET',
+        path: '/catalogo/admin/produtos',
+        query: { busca: 'esf', pagina: '0', tamanho: '20' },
+        headers: CABECALHOS_ADMIN,
+      })
       .willRespondWith({
         status: 200,
         headers: { 'Content-Type': JSON_UTF8 },
-        body: { itens: eachLike(produto), pagina: integer(0), tamanho: integer(20), total: integer(1), totalPaginas: integer(1) },
+        // Dois itens escritos à mão: o desativado (ativo: false, valor exato) tem de aparecer na lista do admin.
+        body: { itens: [{ ...produto, ativo: true }, produtoDesativado], pagina: integer(0), tamanho: integer(20), total: integer(2), totalPaginas: integer(1) },
       });
 
     await provider.executeTest(async (mock) => {
       vi.stubEnv('VITE_API_URL', mock.url);
-      const pagina = await buscarProdutos(obterTokenAdmin, 'esfera', 0, 20);
-      expect(pagina.itens[0]).toMatchObject({ id: PRODUTO, sku: 'ESF-CHROME-01', ativo: true });
+      const pagina = await listarProdutos(obterTokenAdmin, 'esf', 0, 20);
+      expect(pagina.total).toBe(2);
+      expect(pagina.itens.map((p) => p.ativo)).toEqual([true, false]);
+      expect(pagina.itens[0]).toMatchObject({ id: PRODUTO, sku: 'ESF-CHROME-01' });
+    });
+  });
+
+  it('lista as categorias para o seletor do formulário', async () => {
+    provider
+      .given(ESTADO_CATEGORIA)
+      .uponReceiving('a lista de categorias')
+      .withRequest({ method: 'GET', path: '/catalogo/categorias', headers: CABECALHOS_ADMIN })
+      .willRespondWith({
+        status: 200,
+        headers: { 'Content-Type': JSON_UTF8 },
+        body: eachLike({ id: uuid(CATEGORIA), nome: string('Esferas'), slug: string('esferas'), paiId: null }),
+      });
+
+    await provider.executeTest(async (mock) => {
+      vi.stubEnv('VITE_API_URL', mock.url);
+      const categorias = await listarCategorias(obterTokenAdmin);
+      expect(categorias[0]).toMatchObject({ id: CATEGORIA, nome: 'Esferas', paiId: null });
     });
   });
 
@@ -84,12 +122,12 @@ describe('contrato mfe-admin → catalogo-service', () => {
       .given(ESTADO_PRODUTO)
       .uponReceiving('o cadastro de um produto com SKU que já existe')
       .withRequest({ method: 'POST', path: '/catalogo/admin/produtos', headers: CABECALHOS_ADMIN_JSON, body: { ...novo, sku: 'ESF-CHROME-01' } })
-      .willRespondWith({ status: 409, headers: { 'Content-Type': PROBLEMA }, body: like({ detail: string('já existe produto com o SKU ESF-CHROME-01') }) });
+      .willRespondWith({ status: 409, headers: { 'Content-Type': PROBLEMA }, body: like({ detail: string('já existe produto com o SKU ESF-CHROME-01'), campo: string('sku') }) });
 
     await provider.executeTest(async (mock) => {
       vi.stubEnv('VITE_API_URL', mock.url);
       const erro = await cadastrarProduto(obterTokenAdmin, { ...novo, sku: 'ESF-CHROME-01' }).catch((e: ErroDeApi) => e);
-      expect(erro).toMatchObject({ status: 409 });
+      expect(erro).toMatchObject({ status: 409, campo: 'sku' });
       expect((erro as ErroDeApi).message).toMatch(/SKU/);
     });
   });

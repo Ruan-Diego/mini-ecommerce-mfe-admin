@@ -34,11 +34,14 @@ export interface DadosDoProduto {
   categoriaId: string;
 }
 
-/** Vitrine: busca por texto no nome ou na descrição, só produtos ativos. Páginas começam em 0. */
-export const buscarProdutos = (obterToken: ObterToken, busca?: string, pagina?: number, tamanho?: number, sinal?: AbortSignal) =>
-  chamar<Pagina<Produto>>('GET', comQuery('/catalogo/produtos', { busca, pagina, tamanho }), obterToken, { sinal });
+/**
+ * Lista do admin: todos os produtos, inclusive desativados (`ativo: false`), por nome. A busca por texto acha no
+ * nome, na descrição ou no SKU. Páginas começam em 0 (tamanho de 1 a 100, padrão 20).
+ */
+export const listarProdutos = (obterToken: ObterToken, busca?: string, pagina?: number, tamanho?: number, sinal?: AbortSignal) =>
+  chamar<Pagina<Produto>>('GET', comQuery('/catalogo/admin/produtos', { busca, pagina, tamanho }), obterToken, { sinal });
 
-/** SKU repetido responde 409 com o motivo em `detail`. */
+/** SKU (ou slug) repetido responde 409 com o motivo em `detail` e o campo em `campo` ("sku" ou "slug"). */
 export const cadastrarProduto = (obterToken: ObterToken, dados: DadosDoProduto) =>
   chamar<{ id: string }>('POST', '/catalogo/admin/produtos', obterToken, { corpo: dados });
 
@@ -63,3 +66,15 @@ export function enviarImagem(obterToken: ObterToken, id: string, arquivo: Blob, 
     { formulario },
   );
 }
+
+export interface Categoria {
+  id: string;
+  nome: string;
+  slug: string;
+  /** Nulo = categoria raiz. */
+  paiId: string | null;
+}
+
+/** Categorias em ordem alfabética (leitura pública da vitrine, para o seletor do formulário). */
+export const listarCategorias = (obterToken: ObterToken, sinal?: AbortSignal) =>
+  chamar<Categoria[]>('GET', '/catalogo/categorias', obterToken, { sinal });
