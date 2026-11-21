@@ -9,6 +9,8 @@ export class ErroDeApi extends Error {
   constructor(
     readonly status: number,
     mensagem: string,
+    /** Campo do pedido que causou o erro, quando o backend diz (ex.: "sku" no 409 de SKU repetido). */
+    readonly campo?: string,
   ) {
     super(mensagem);
   }
@@ -29,16 +31,16 @@ export interface Opcoes {
 
 const baseUrl = () => (import.meta.env.VITE_API_URL ?? '').replace(/\/$/, '');
 
-/** Texto para mostrar ao admin: o `detail` do problem+json quando existe, senão uma frase genérica. */
-async function mensagemDoErro(resposta: Response): Promise<string> {
+/** O que mostrar ao admin: o `detail` do problem+json (e o `campo`, se vier) ou uma frase genérica. */
+async function lerErro(resposta: Response): Promise<{ mensagem: string; campo?: string }> {
   try {
-    const problema = (await resposta.json()) as { detail?: string };
-    if (problema.detail) return problema.detail;
+    const problema = (await resposta.json()) as { detail?: string; campo?: string };
+    if (problema.detail) return { mensagem: problema.detail, campo: problema.campo };
   } catch {
     // corpo vazio ou que não é JSON: cai na frase genérica
   }
-  if (resposta.status === 403) return 'você não tem permissão de administrador';
-  return `o servidor respondeu HTTP ${resposta.status}`;
+  if (resposta.status === 403) return { mensagem: 'você não tem permissão de administrador' };
+  return { mensagem: `o servidor respondeu HTTP ${resposta.status}` };
 }
 
 /** Monta a query string sem os valores vazios; `status` repetível vira `status=A&status=B`. */
@@ -67,7 +69,10 @@ export async function chamar<T>(metodo: Metodo, caminho: string, obterToken: Obt
   }
 
   const resposta = await fetch(`${baseUrl()}${caminho}`, { method: metodo, headers: cabecalhos, body: corpo, signal: opcoes.sinal });
-  if (!resposta.ok) throw new ErroDeApi(resposta.status, await mensagemDoErro(resposta));
+  if (!resposta.ok) {
+    const { mensagem, campo } = await lerErro(resposta);
+    throw new ErroDeApi(resposta.status, mensagem, campo);
+  }
   if (resposta.status === 204) return undefined as T;
   return (await resposta.json()) as T;
 }
